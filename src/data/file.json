@@ -1,0 +1,20 @@
+[
+    {
+        "id": "edges-1",
+        "type": "input",
+        "data": { "label": "Input 1" },
+        "position": { "x": 250, "y": 0 }
+    },
+    {
+        "id": "edges-2",
+        "type": "default",
+        "data": { "label": "Input 2" },
+        "position": { "x": 250, "y": 250 }
+    },
+    {
+        "id": "edges-3",
+        "type": "default",
+        "data": { "label": "Input 3" },
+        "position": { "x": 250, "y": 50 }
+    }
+]

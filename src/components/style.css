@@ -1,0 +1,84 @@
+/* head */
+.head{
+    width: 70vw;
+    height: 50px;
+    display: flex;
+    border-bottom: 2px white solid;
+}
+.head-1{
+    flex: 1;
+    padding: 2px 5px 2px 20px;
+    display: flex;
+    align-items: center;
+}
+.head-1 .logo{
+    width: 70px;
+    height: 30px;
+}
+.head-1 .head-tag{
+    margin: 0 15px;
+    align-items: center;
+    cursor: pointer;
+    padding: 2px 5px;
+}
+.head-1 .head-tag h5:hover{
+    background-color: #4c497e;
+    padding: 2px 5px;
+    color: white;
+}
+.head-2{
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.head-3{
+    flex: 1;
+    display: flex;
+    justify-content:space-evenly;
+    align-items: center;
+}
+.head-3 h5{
+    cursor: pointer;
+}
+.head-3 h5:hover{
+    color: red;
+}
+.view-elements{
+    position: absolute;
+    top: 30px;
+    box-sizing: border-box;
+    border: 0.5px solid white;
+    padding: 20px;
+    word-wrap: break-word;
+    background-color: #2d3748;
+    width: 150px;
+    border-radius: 5px;
+    z-index: 999;
+}
+.view-elements li{
+    padding: 3px 0;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    margin-left: -19px;
+    padding: 7px 17px 7px 21px;
+    font-size: 11px;
+    font-weight: 400;
+    list-style: none;
+    align-items: center;
+    justify-content: center;
+}
+button{
+    cursor: pointer;
+}
+.tapclick{
+    height: 93vh;
+    width: 40vw;
+    background-color: burlywood;
+}
+
+.node{
+    background-color: white;
+}
