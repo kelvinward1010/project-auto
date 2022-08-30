@@ -77,8 +77,69 @@ button{
     height: 93vh;
     width: 40vw;
     background-color: burlywood;
+    padding: 5px;
 }
 
 .node{
     background-color: white;
+}
+.tapclick h3{
+    text-align: center;
+}
+.tapclick-value{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+.tapclick-value input,textarea{
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+}
+
+.tapclick-value input:focus,textarea:focus{
+    border: 2px solid teal;
+}
+.tapclick-button{
+    display: flex;
+    justify-content: center;
+}
+.tapclick-button button{
+    padding: 5px 20px;
+    background-color: teal;
+    border: none;
+    border-radius: 5px;
+    color: white;
+}
+
+.tapclick-close{
+    display: flex;
+    justify-content: center;
+}
+.tapclick-close button{
+    margin-top: 10px;
+    padding: 5px 25px;
+    background-color: red;
+    border: none;
+    border-radius: 5px;
+    color: white;
+}
+.react-flow__nodesselection-rect,
+.react-flow__selection {
+  background: rgba(0, 89, 220, 0.5);
+  border: 1px dotted blue;
+}
+
+.react-flow__nodesselection {
+    z-index: 3;
+    transform-origin: left top;
+    pointer-events: none;
+    background-color: blue;
+  
+    /* &-rect {
+      position: absolute;
+      pointer-events: all;
+      cursor: grab;
+    } */
 }

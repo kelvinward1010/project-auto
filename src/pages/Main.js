@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import ReactFlow, { addEdge, Background, Controls, getIncomers, MarkerType, useEdges, useEdgesState, useNodes, useNodesState, useReactFlow } from 'react-flow-renderer';
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import ReactFlow, { addEdge, Background, Controls, getIncomers, MarkerType, useEdges, useEdgesState, useNodes, useNodesState, useReactFlow, useStore, useStoreApi , getRectOfNodes, useKeyPress} from 'react-flow-renderer';
 import { initialEdges } from '../fakedata';
 import '../App.css';
 import CustomEdge from '../components/CustomEdge';
@@ -7,68 +7,57 @@ import initialNodes from '../data/file.json'
 import { useRecoilValue } from 'recoil';
 import { file } from '../helpers/stateRecoil';
 import TapClick from '../components/TapClick';
-import CustomNode from '../components/CustomNode';
+import CustomNode from '../components/nodes/CustomNode';
 import dagre from 'dagrejs';
 import { createGraphLayout } from '../algorithms/layout';
+import { v4 as uuid } from 'uuid';
+import GroupNode from '../components/nodes/GroupNode';
+
 
 const edgeTypes = {
   custom: CustomEdge,
 };
 
 const nodeTypes = {
-  nodeTp: CustomNode
+  nodeTp: CustomNode,
+  groupTp: GroupNode
 }
 
-const initBgColor = 'black';
+const initBgColor = 'white';
 
 const nodeWidth = 140;
 const nodeHeight = 20;
 
+let id = 0;
+const getId = () => `dndnode_${id++}`;
+const unique_id = uuid();
+const small_id = unique_id.slice(0,8)
+const selectTypeNode = [
+  'nodeTp',
+  'default',
+]
 
-
-// const dagreGraph = new dagre.graphlib.Graph();
-// dagreGraph.setDefaultEdgeLabel(() => ({}));
-
-// const getLayoutedElements = (nodes, edges, direction = 'LR') => {
-//   const isHorizontal = direction === 'LR';
-//   dagreGraph.setGraph({ rankdir: direction });
-
-//   nodes.forEach((node) => {
-//     dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
-//   });
-
-//   edges.forEach((edge) => {
-//     dagreGraph.setEdge(edge.source, edge.target);
-//   });
-
-//   dagre.layout(dagreGraph);
-
-//   nodes.forEach((node) => {
-//     const nodeWithPosition = dagreGraph.node(node.id);
-//     node.targetPosition = isHorizontal ? 'left' : 'top';
-//     node.sourcePosition = isHorizontal ? 'right' : 'bottom';
-
-//     node.position = {
-//       x: nodeWithPosition.x - nodeWidth / 2,
-//       y: nodeWithPosition.y - nodeHeight / 2,
-//     };
-
-//     return node;
-//   });
-
-//   return { nodes, edges };
-// };
+const bboxSelector = (state) => state.bboxSelector;
+const shallow = (state) => state.shallow;
 
 function Main() {
 
   const filehere = useRecoilValue(file)
   const [nodes, setNodes , onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const reactFlowWrapper = useRef(null);
+  const SHIFTKEYS = useKeyPress('Shift');
+
   const [isOpen, setIsOpen] = useState(false)
+  const [valueNode, setValueNode] = useState('');
+  const reactFlowInstance = useReactFlow();
+  const store = useStoreApi();
+  const selectedNodes = Array.from(nodes).filter((n) => n.selected);
+  const tt = getRectOfNodes(selectedNodes)
 
 
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge({ ...params, animated: true, style: { stroke: '#fff' } }, eds)),
+    (params) => setEdges((eds) => addEdge({ ...params, animated: true, style: { stroke: 'black' } }, eds)),
     []
   );
 
@@ -78,18 +67,18 @@ function Main() {
       let nodes = filehere.map((item) => (
         {
           id: String(item.name),
-          type: `nodeTp`,
+          type: 'nodeTp',
           data: { 
             label: `${item.name}`, 
             input: `${item.input}`,
             output: `${item.output}`,
-            inof:`${item.input_name}`
+            inof:`${item.input_name}`,
+            typenode: `${item.op_type}`
           },
           position: {x: 0, y: 0},
         }
       ));
       let edges = [];
-
       if (Array.isArray(filehere)) {
         filehere?.forEach((item)=> {
           let inputs = item.input_name?.split(",");
@@ -119,7 +108,7 @@ function Main() {
                 source: input,
                 animated: true,
                 type: 'step',
-                style: { stroke: 'white' },
+                style: { stroke: 'black' },
                 markerEnd: {
                   type: MarkerType.ArrowClosed,
                 },
@@ -143,6 +132,15 @@ function Main() {
   const {getNode} = useReactFlow();
   const allNodes = useNodes();
   const allEdges = useEdges();
+  console.log(allNodes)
+
+
+  const onNodeClick = (event,node) => {
+    event.preventDefault();
+    setIsOpen(true)
+    setValueNode(node)
+    console.log(node)
+  }
 
   // const dataEdge = [];
   // const testdata = [];
@@ -221,9 +219,38 @@ function Main() {
   //   ))}
   // },[nodes])
 
-  console.log(allEdges)
-  console.log(allNodes)
+  const handleUpdate = (e,id) => {
+    setNodes((nds) => 
+      nds.map((node) => {
+        if(node.id === id){
+          node.data = {...node.data, label: e.namenode}
+        }
+        return node
+      })
+    )
+  }
 
+  const handleClose = () => {
+    setIsOpen(false)
+  }
+
+  
+  const handleCreateGroup = () => {
+    if(selectedNodes?.length > 1){
+      const newNodeGroup = {
+        id: getId(),
+        data: { label: `node group-${getId()}` },
+        type: 'group',
+        position: {x: tt.x, y: tt.y},
+        style: { backgroundColor: 'rgba(0,89,220,.08)', width: Number(tt.width +50), height: Number(tt.height +50), paddingTop: '20px' }
+      }
+      setNodes([...nodes, newNodeGroup])
+      selectedNodes?.forEach(item => {
+        setNodes(nds => nds.map(node => node.id === item.id ? ({...node, data: {...node.data, parentNode: newNodeGroup.id, extent: 'parent'}}): node))
+      })
+    }
+  }
+  
 
   return (
     <div
@@ -235,18 +262,22 @@ function Main() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        // edgeTypes={edgeTypes}
+        onMouseUp={handleCreateGroup}
+        id="keysup"
         panOnScroll={true}
         nodeTypes={nodeTypes}
-        // onNodeClick={affterClick}
-        onClick={() => setIsOpen(!isOpen)}
+        onNodeClick={onNodeClick}
         style={{ background: initBgColor, maxHeight: "100%", overflow: "scroll" }}
         fitView
       >
         <Controls />
-        <Background />
+        <Background/>
+        {}
       </ReactFlow>
-      {/* {isOpen && <TapClick />} */}
+      {isOpen && <TapClick 
+        data={valueNode} updateFuntion={handleUpdate} 
+        closefn={handleClose}
+        />}
     </div>
   )
 }
