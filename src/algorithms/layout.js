@@ -16,6 +16,8 @@ export const createGraphLayout = async (elementNodes, elementEdges) => {
       // "elk.padding": "[top=200,left=100,bottom=25,right=25]",
       // "elk.spacing.nodeNode": 50,
       // "elk.layered.spacing.nodeNodeBetweenLayers": 25,
+
+
       "elk.algorithm": "layered",
       "elk.direction": "DOWN", // TYPE: 	UNDEFINED / RIGHT / LEFT / DOWN / UP
       "elk.spacing.nodeNode": "25",
@@ -25,6 +27,7 @@ export const createGraphLayout = async (elementNodes, elementEdges) => {
       "elk.spacing": "50",
       "elk.spacing.individual": "50",
       "elk.edgeRouting": "SPLINES",
+
     }
   });
 

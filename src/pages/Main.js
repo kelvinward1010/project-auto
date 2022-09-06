@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import ReactFlow, { addEdge, Background, Controls, getIncomers, MarkerType, useEdges, useEdgesState, useNodes, useNodesState, useReactFlow, useStore, useStoreApi , getRectOfNodes, useKeyPress} from 'react-flow-renderer';
+import ReactFlow, { addEdge, Background, Controls, getIncomers, MarkerType, useEdges, useEdgesState, useNodes, useNodesState, useReactFlow, useStore, useStoreApi , getRectOfNodes, useKeyPress, applyNodeChanges, applyEdgeChanges} from 'react-flow-renderer';
 import { initialEdges } from '../fakedata';
 import '../App.css';
 import CustomEdge from '../components/CustomEdge';
@@ -43,8 +43,8 @@ const shallow = (state) => state.shallow;
 function Main() {
 
   const filehere = useRecoilValue(file)
-  const [nodes, setNodes , onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes ] = useState([]);
+  const [edges, setEdges] = useState([]);
   const reactFlowWrapper = useRef(null);
   const SHIFTKEYS = useKeyPress('Shift');
 
@@ -55,79 +55,6 @@ function Main() {
   const selectedNodes = Array.from(nodes).filter((n) => n.selected);
   const tt = getRectOfNodes(selectedNodes)
 
-
-  const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge({ ...params, animated: true, style: { stroke: 'black' } }, eds)),
-    []
-  );
-
-
-  useEffect(() => {
-    if(filehere.length > 0) {
-      let nodes = filehere.map((item) => (
-        {
-          id: String(item.name),
-          type: 'nodeTp',
-          data: { 
-            label: `${item.name}`, 
-            input: `${item.input}`,
-            output: `${item.output}`,
-            inof:`${item.input_name}`,
-            typenode: `${item.op_type}`
-          },
-          position: {x: 0, y: 0},
-        }
-      ));
-      let edges = [];
-      if (Array.isArray(filehere)) {
-        filehere?.forEach((item)=> {
-          let inputs = item.input_name?.split(",");
-          if(inputs) inputs.forEach((input)=> {
-            if(!nodes.find((node)=> {return node.id == input;})) {
-              nodes.push({
-                  id: String(input),
-                  type: `nodeTp`,
-                  data: { 
-                    label: input, 
-                    input: null,
-                  },
-                  position: {x: 0, y: 0},
-              })
-            }
-          })
-        })
-
-        filehere?.forEach((item)=> {
-          let outputName = item.name;
-          if (item.input_name) {
-            let inputs = item.input_name?.split(",");
-            inputs.forEach((input) => {
-              edges.push({
-                id: String(`edge-${input}-${outputName}`),
-                target: outputName,
-                source: input,
-                animated: true,
-                type: 'step',
-                style: { stroke: 'black' },
-                markerEnd: {
-                  type: MarkerType.ArrowClosed,
-                },
-              })
-            })
-          }
-        })
-      }
-      
-      (async () => {
-        const res = await createGraphLayout(
-          nodes,
-          edges
-        );
-        setNodes(res.nodes)
-        setEdges(res.edges)
-      })()
-    }
-  }, [filehere])
 
   const {getNode} = useReactFlow();
   const allNodes = useNodes();
@@ -234,9 +161,9 @@ function Main() {
     setIsOpen(false)
   }
 
-  
+
   const handleCreateGroup = () => {
-    if(selectedNodes?.length > 1){
+    if(selectedNodes?.length > 1 && SHIFTKEYS === true){
       const newNodeGroup = {
         id: getId(),
         data: { label: `node group-${getId()}` },
@@ -246,11 +173,93 @@ function Main() {
       }
       setNodes([...nodes, newNodeGroup])
       selectedNodes?.forEach(item => {
-        setNodes(nds => nds.map(node => node.id === item.id ? ({...node, data: {...node.data, parentNode: newNodeGroup.id, extent: 'parent'}}): node))
+        setNodes(nds => nds.map(node => node.id === item.id ? ({...node,positionAbsolute:newNodeGroup.position,parentNode: newNodeGroup.id, extent: 'parent'}): node))
       })
     }
   }
   
+
+  const onNodesChange = useCallback(
+    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    [setNodes]
+  );
+  const onEdgesChange = useCallback(
+    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    [setEdges]
+  );
+
+
+  const onConnect = useCallback(
+    (params) => setEdges((eds) => addEdge({ ...params, animated: true, style: { stroke: 'black' } }, eds)),
+    []
+  );
+
+  useEffect(() => {
+    if(filehere.length > 0) {
+      let nodes = filehere.map((item) => (
+        {
+          id: String(item.name),
+          type: 'nodeTp',
+          data: { 
+            label: `${item.name}`, 
+            input: `${item.input}`,
+            output: `${item.output}`,
+            inof:`${item.input_name}`,
+            typenode: `${item.op_type}`
+          },
+          position: {x: 0, y: 0},
+        }
+      ));
+      let edges = [];
+      if (Array.isArray(filehere)) {
+        filehere?.forEach((item)=> {
+          let inputs = item.input_name?.split(",");
+          if(inputs) inputs.forEach((input)=> {
+            if(!nodes.find((node)=> {return node.id == input;})) {
+              nodes.push({
+                  id: String(input),
+                  type: `nodeTp`,
+                  data: { 
+                    label: input, 
+                    input: null,
+                  },
+                  position: {x: 0, y: 0},
+              })
+            }
+          })
+        })
+
+        filehere?.forEach((item)=> {
+          let outputName = item.name;
+          if (item.input_name) {
+            let inputs = item.input_name?.split(",");
+            inputs.forEach((input) => {
+              edges.push({
+                id: String(`edge-${input}-${outputName}`),
+                target: outputName,
+                source: input,
+                animated: true,
+                type: 'step',
+                style: { stroke: 'black' },
+                markerEnd: {
+                  type: MarkerType.ArrowClosed,
+                },
+              })
+            })
+          }
+        })
+      }
+      
+      (async () => {
+        const res = await createGraphLayout(
+          nodes,
+          edges
+        );
+        setNodes(res.nodes)
+        setEdges(res.edges)
+      })()
+    }
+  }, [filehere])
 
   return (
     <div
@@ -263,10 +272,11 @@ function Main() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onMouseUp={handleCreateGroup}
-        id="keysup"
+        id='test'
         panOnScroll={true}
         nodeTypes={nodeTypes}
         onNodeClick={onNodeClick}
+        attributionPosition="top-right"
         style={{ background: initBgColor, maxHeight: "100%", overflow: "scroll" }}
         fitView
       >
