@@ -1,9 +1,1 @@
-import React from 'react'
-
-function Server() {
-    return (
-        <div>Server</div>
-    )
-}
-
-export default Server
+export const URL = 'http://192.168.1.100:4803'

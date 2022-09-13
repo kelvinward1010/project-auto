@@ -4,6 +4,7 @@ import { Button, ButtonGroup } from '@chakra-ui/react'
 import { atom, useRecoilState } from 'recoil';
 import { fileState } from '../helpers/atom';
 import axios from 'axios';
+import { URL } from '../api/Server';
 
 function ReadFile({fn}) {
 
@@ -48,7 +49,7 @@ function ReadFile({fn}) {
         const data = new FormData() 
         data.append('file', selectedFile)
         console.warn(selectedFile);
-        let url = "http://192.168.1.100:4803/api/upload";
+        let url = `${URL}/api/upload`;
         axios.post(url, data, {})
         .then(res => {
             console.warn(res.data);
