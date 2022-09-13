@@ -5,6 +5,11 @@ import './style.css';
 function Head() {
 
     const [openView, setOpenView] = useState(false)
+    const [colorBk, setColorBk] = useState(false)
+
+    const handleThemeBk = () => {
+        setColorBk(true)
+    }
 
     return (
         <div className='head'>
@@ -12,6 +17,7 @@ function Head() {
                 <div className='head-tag' onClick={() =>setOpenView(!openView)}>
                     <h5>File</h5>
                 </div>
+                <button onClick={handleThemeBk}>Change Background</button>
                 {openView && 
                     <>
                         <ul className='view-elements'>
