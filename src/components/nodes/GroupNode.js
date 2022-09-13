@@ -29,8 +29,11 @@ function GroupNode({data,isConnectable,id}) {
       <>
           <Box color={'white'} maxW={'sm'} borderWidth='1px' borderRadius={'lg'}>
               <CloseIcon onClick={getNodeIdandDeleteNode}/>
-              <Box p='6'>
-              <p>{data.label}</p>
+              <Box p='6' backgroundColor={'black'}>
+              <p style={{
+                top: 0,
+                left:0,
+              }}>{data.label}</p>
               {/* <p>This is Input: {data.input}</p>
               <p>This is Output: {data.output}</p> */}
               </Box>
